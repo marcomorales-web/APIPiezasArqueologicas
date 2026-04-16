@@ -54,4 +54,53 @@ app.MapGet("/piezas/buscar", (string texto) =>
     return Results.Ok(resultado);
 });
 
+app.MapGet("/api/abecedario", (IWebHostEnvironment env) =>
+{
+    string rutaArchivo = Path.Combine(env.ContentRootPath, "Data", "abecedario.json");
+
+    if (!File.Exists(rutaArchivo))
+    {
+        return Results.NotFound(new { mensaje = "No se encontró el archivo abecedario.json" });
+    }
+
+    string json = File.ReadAllText(rutaArchivo);
+
+    var opciones = new JsonSerializerOptions
+    {
+        PropertyNameCaseInsensitive = true
+    };
+
+    var palabras = JsonSerializer.Deserialize<List<PalabraAbecedario>>(json, opciones);
+
+    return Results.Ok(palabras);
+});
+
+app.MapGet("/api/abecedario/{id:int}", (int id, IWebHostEnvironment env) =>
+{
+    string rutaArchivo = Path.Combine(env.ContentRootPath, "Data", "abecedario.json");
+
+    if (!File.Exists(rutaArchivo))
+    {
+        return Results.NotFound(new { mensaje = "No se encontró el archivo abecedario.json" });
+    }
+
+    string json = File.ReadAllText(rutaArchivo);
+
+    var opciones = new JsonSerializerOptions
+    {
+        PropertyNameCaseInsensitive = true
+    };
+
+    var palabras = JsonSerializer.Deserialize<List<PalabraAbecedario>>(json, opciones) ?? new List<PalabraAbecedario>();
+
+    var palabra = palabras.FirstOrDefault(p => p.Id == id);
+
+    if (palabra == null)
+    {
+        return Results.NotFound(new { mensaje = "Palabra no encontrada" });
+    }
+
+    return Results.Ok(palabra);
+});
+
 app.Run();
